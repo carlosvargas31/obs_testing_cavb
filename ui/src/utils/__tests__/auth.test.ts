@@ -53,8 +53,8 @@ describe('Auth Utils', () => {
       const mockPayload = {
         _id: 'user-123',
         email: 'test@example.com',
-        iat: Math.floor(now / 1000) - 3600, // 1 hour ago
-        exp: Math.floor(now / 1000) + 3600, // 1 hour from now
+        iat: Math.floor(now / 1000) - 3600,
+        exp: Math.floor(now / 1000) + 3600,
       };
 
       (jwt_decode as jest.Mock).mockReturnValue(mockPayload);
@@ -168,8 +168,8 @@ describe('Auth Utils', () => {
       const mockPayload = {
         _id: 'user-123',
         email: 'test@example.com',
-        iat: Math.floor(now / 1000) - 7200, // 2 hours ago
-        exp: Math.floor(now / 1000) - 3600, // 1 hour ago (expired)
+        iat: Math.floor(now / 1000) - 7200,
+        exp: Math.floor(now / 1000) - 3600,
       };
 
       (jwt_decode as jest.Mock).mockReturnValue(mockPayload);
@@ -185,8 +185,8 @@ describe('Auth Utils', () => {
       const mockPayload = {
         _id: 'user-123',
         email: 'test@example.com',
-        iat: Math.floor(now / 1000) + 3600, // 1 hour from now (not yet valid)
-        exp: Math.floor(now / 1000) + 7200, // 2 hours from now
+        iat: Math.floor(now / 1000) + 3600,
+        exp: Math.floor(now / 1000) + 7200,
       };
 
       (jwt_decode as jest.Mock).mockReturnValue(mockPayload);
@@ -207,7 +207,7 @@ describe('Auth Utils', () => {
         _id: 'user-123',
         email: 'test@example.com',
         iat: Math.floor(now / 1000) - 3600,
-        exp: Math.floor(now / 1000) + 1, // expires in 1 second
+        exp: Math.floor(now / 1000) + 1,
       };
 
       (jwt_decode as jest.Mock).mockReturnValue(mockPayload);
@@ -287,7 +287,7 @@ describe('Auth Utils', () => {
         _id: 'user-123',
         email: 'test@example.com',
         iat: Math.floor(now / 1000) - 7200,
-        exp: Math.floor(now / 1000) - 3600, // expired
+        exp: Math.floor(now / 1000) - 3600,
       };
 
       (jwt_decode as jest.Mock).mockReturnValue(mockPayload);
@@ -308,7 +308,7 @@ describe('Auth Utils', () => {
       const mockPayload = {
         _id: 'user-123',
         email: 'test@example.com',
-        iat: Math.floor(now / 1000) + 3600, // not yet valid
+        iat: Math.floor(now / 1000) + 3600,
         exp: Math.floor(now / 1000) + 7200,
       };
 
