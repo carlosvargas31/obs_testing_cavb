@@ -7,6 +7,7 @@ import {
   getCurrentUser,
   WrongCredentialsException,
   logout,
+  setLogoutIfExpiredHandler
 } from '../auth';
 import { tokenKey } from '../../constants/config';
 import { User } from '../../model/user';
@@ -360,6 +361,72 @@ describe('Auth Utils', () => {
       const user = getCurrentUser();
 
       expect(user?.email).toBe('test+special@example.co.uk');
+    });
+  });
+
+  describe('setLogoutIfExpiredHandler()', () => {
+    it('should set timeout when token is active', () => {
+      const now = Date.now();
+      jest.setSystemTime(now);
+
+      const mockPayload = {
+        _id: 'user-123',
+        email: 'test@example.com',
+        iat: Math.floor(now / 1000) - 3600,
+        exp: Math.floor(now / 1000) + 7200, // expires in 2 hours
+      };
+
+      (jwt_decode as jest.Mock).mockReturnValue(mockPayload);
+      setAuthToken('test-token');
+
+      const setUserMock = jest.fn();
+      const setTimeoutSpy = jest.spyOn(global, 'setTimeout');
+
+      setLogoutIfExpiredHandler(setUserMock);
+
+      expect(setTimeoutSpy).toHaveBeenCalled();
+      setTimeoutSpy.mockRestore();
+    });
+
+    it('should not set timeout when token is not active', () => {
+      const setUserMock = jest.fn();
+      // Ensure token is not set
+      mockLocalStorage = {};
+
+      jest.clearAllMocks();
+      const setTimeoutSpy = jest.spyOn(global, 'setTimeout');
+
+      setLogoutIfExpiredHandler(setUserMock);
+
+      expect(setTimeoutSpy).not.toHaveBeenCalled();
+      setTimeoutSpy.mockRestore();
+    });
+
+    it('should return early when getToken returns null', () => {
+      const now = Date.now();
+      jest.setSystemTime(now);
+
+      const mockPayload = {
+        _id: 'user-123',
+        email: 'test@example.com',
+        iat: Math.floor(now / 1000) - 3600,
+        exp: Math.floor(now / 1000) + 7200,
+      };
+
+      (jwt_decode as jest.Mock).mockReturnValue(mockPayload);
+      setAuthToken('test-token');
+      removeAuthToken();
+
+      jest.clearAllMocks();
+
+      const setUserMock = jest.fn();
+      const setTimeoutSpy = jest.spyOn(global, 'setTimeout');
+
+      setLogoutIfExpiredHandler(setUserMock);
+
+      // Should not call setTimeout if token is removed
+      expect(setTimeoutSpy).not.toHaveBeenCalled();
+      setTimeoutSpy.mockRestore();
     });
   });
 });

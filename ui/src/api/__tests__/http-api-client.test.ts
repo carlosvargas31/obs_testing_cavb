@@ -160,4 +160,57 @@ describe('HttpApiClient', () => {
       expect(result.projects).toEqual(mockProjects);
     });
   });
+
+  describe('error handling for different status codes', () => {
+    test('throws UnprocessableEntity error on 422 status', async () => {
+      const mockResponse = {
+        ok: false,
+        status: 422,
+        json: jest.fn().mockResolvedValue({ detail: 'Validation error' })
+      };
+      mockFetch.mockResolvedValueOnce(mockResponse as any);
+
+      let errorThrown = false;
+      try {
+        await client.getAboutMe();
+      } catch (e) {
+        errorThrown = true;
+      }
+      expect(errorThrown).toBe(true);
+    });
+
+    test('throws PreconditionRequired error on 428 status', async () => {
+      const mockResponse = {
+        ok: false,
+        status: 428,
+        text: jest.fn().mockResolvedValue('Precondition required')
+      };
+      mockFetch.mockResolvedValueOnce(mockResponse as any);
+
+      let errorThrown = false;
+      try {
+        await client.getAboutMe();
+      } catch (e) {
+        errorThrown = true;
+      }
+      expect(errorThrown).toBe(true);
+    });
+
+    test('throws error on 415 status (Unsupported Media Type)', async () => {
+      const mockResponse = {
+        ok: false,
+        status: 415,
+        json: jest.fn().mockResolvedValue({ detail: 'Unsupported media type' })
+      };
+      mockFetch.mockResolvedValueOnce(mockResponse as any);
+
+      let errorThrown = false;
+      try {
+        await client.getAboutMe();
+      } catch (e) {
+        errorThrown = true;
+      }
+      expect(errorThrown).toBe(true);
+    });
+  });
 });
