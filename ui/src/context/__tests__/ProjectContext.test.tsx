@@ -61,6 +61,40 @@ describe('ProjectContext', () => {
     expect(result.current.projects[0]).toMatchObject(updated);
   });
 
+  it('overwrites an existing project when addProject is called with same id', () => {
+    const { result } = renderHook(() => useProject(), { wrapper });
+    const original = createProject({ _id: 'dup', title: 'Original' });
+    const replacement = createProject({ _id: 'dup', title: 'Replaced' });
+
+    act(() => result.current.addProject(original));
+    act(() => result.current.addProject(replacement));
+
+    expect(result.current.projects).toHaveLength(1);
+    expect(result.current.projects[0].title).toBe('Replaced');
+  });
+
+  it('ignores updateProject when updatedProject has no _id', () => {
+    const { result } = renderHook(() => useProject(), { wrapper });
+    const project = createProject({ _id: 'with-id', title: 'Keep' });
+
+    act(() => result.current.addProject(project));
+    act(() => result.current.updateProject({ title: 'No Id' } as any));
+
+    expect(result.current.projects).toHaveLength(1);
+    expect(result.current.projects[0].title).toBe('Keep');
+  });
+
+  it('ignores updateProject when project does not exist', () => {
+    const { result } = renderHook(() => useProject(), { wrapper });
+    const project = createProject({ _id: 'existing', title: 'Existing' });
+
+    act(() => result.current.addProject(project));
+    act(() => result.current.updateProject({ ...project, _id: 'missing', title: 'No-op' }));
+
+    expect(result.current.projects).toHaveLength(1);
+    expect(result.current.projects[0].title).toBe('Existing');
+  });
+
   it('does not throw when deleting a non-existent project', () => {
     const { result } = renderHook(() => useProject(), { wrapper });
     const project = createProject();
