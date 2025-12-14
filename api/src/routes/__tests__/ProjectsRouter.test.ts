@@ -3,6 +3,8 @@ import express, { Application, Router } from 'express';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose, { Connection } from 'mongoose';
 import bodyParser from 'body-parser';
+import { validProject, invalidProjects } from '@/tests/fixtures/projects';
+import { buildProject, resetProjectFactory } from '@/tests/factories/projectFactory';
 
 // Definir el schema directamente para evitar dependencias circulares
 const ProjectSchema = new mongoose.Schema(
@@ -86,6 +88,7 @@ describe('ProjectsRouter', () => {
   beforeEach(async () => {
     // Limpiar la colección antes de cada test
     await ProjectModel.deleteMany({});
+    resetProjectFactory();
   });
 
   describe('GET /v1/projects - Listar todos los proyectos', () => {
@@ -99,27 +102,9 @@ describe('ProjectsRouter', () => {
     });
 
     it('debería retornar todos los proyectos ordenados por timestamp', async () => {
-      // Crear múltiples proyectos
-      const projects = [
-        {
-          title: 'Project 1',
-          description: 'Desc 1',
-          version: '1.0.0',
-          link: 'https://p1.com',
-          tag: 'tag1',
-          timestamp: 1000
-        },
-        {
-          title: 'Project 2',
-          description: 'Desc 2',
-          version: '2.0.0',
-          link: 'https://p2.com',
-          tag: 'tag2',
-          timestamp: 500
-        }
-      ];
-
-      await ProjectModel.create(projects);
+      const p1 = buildProject({ timestamp: 1000 });
+      const p2 = buildProject({ timestamp: 500 });
+      await ProjectModel.create([p1, p2]);
 
       const response = await request(app)
         .get('/v1/projects')
@@ -133,42 +118,28 @@ describe('ProjectsRouter', () => {
 
   describe('POST /v1/projects - Crear proyecto válido', () => {
     it('debería crear un proyecto y retornar status 201', async () => {
-      const newProject = {
-        title: 'New Project',
-        description: 'New Description',
-        version: '2.0.0',
-        link: 'https://newproject.com',
-        tag: 'new',
-        timestamp: Date.now()
-      };
-
       const response = await request(app)
         .post('/v1/projects')
-        .send(newProject)
+        .send(validProject)
         .expect(201);
 
       // Verificar que retorna el proyecto creado
       expect(response.body).toHaveProperty('_id');
-      expect(response.body.title).toBe(newProject.title);
-      expect(response.body.description).toBe(newProject.description);
+      expect(response.body.title).toBe(validProject.title);
+      expect(response.body.description).toBe(validProject.description);
 
       // Verificar que el proyecto existe en la DB
       const projectInDb = await ProjectModel.findById(response.body._id);
       expect(projectInDb).toBeTruthy();
-      expect(projectInDb?.title).toBe(newProject.title);
+      expect(projectInDb?.title).toBe(validProject.title);
     });
   });
 
   describe('POST /v1/projects - Datos inválidos', () => {
     it('debería retornar status 400 cuando falta el título', async () => {
-      const invalidProject = {
-        description: 'Missing title',
-        version: '1.0.0'
-      };
-
       const response = await request(app)
         .post('/v1/projects')
-        .send(invalidProject)
+        .send(invalidProjects.missingTitle)
         .expect(400);
 
       // Verificar mensaje de validación
