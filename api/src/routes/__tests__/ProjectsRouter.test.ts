@@ -27,7 +27,6 @@ describe('ProjectsRouter', () => {
   let ProjectModel: mongoose.Model<any>;
 
   beforeAll(async () => {
-    // Configurar MongoDB Memory Server con timeout extendido
     mongoServer = await MongoMemoryServer.create({
       instance: {
         port: 27020
