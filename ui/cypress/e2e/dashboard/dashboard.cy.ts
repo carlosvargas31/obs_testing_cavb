@@ -21,7 +21,6 @@ describe('Dashboard Page', () => {
         aboutMe: aboutMeFixture,
         projects: [projectFixture]
       });
-      
       cy.visit('/dashboard');
       
       // Esperar a que las APIs respondan
@@ -37,7 +36,6 @@ describe('Dashboard Page', () => {
       cy.mockDashboardApi({
         projects: [projectFixture]
       });
-      
       cy.visit('/dashboard');
       cy.wait(['@getAboutMe', '@getProjects']);
       
@@ -51,9 +49,7 @@ describe('Dashboard Page', () => {
     
     it('debe mostrar loading mientras carga', () => {
       // Mockear con delay
-      cy.mockDashboardApi({ delay: 1500 });
-      
-      cy.visit('/dashboard');
+      cy.visitWithMocks('/dashboard', { delay: 1500 });
       
       // Verificar que aparece el loader con mensaje específico
       cy.contains(/loading data|cargando/i).should('be.visible');
@@ -71,9 +67,7 @@ describe('Dashboard Page', () => {
     
     it('debe mostrar error cuando la API falla', () => {
       // Mockear error
-      cy.mockDashboardApi({ error: true });
-      
-      cy.visit('/dashboard');
+      cy.visitWithMocks('/dashboard', { error: true });
       
       // Esperar respuestas de error
       cy.wait(['@getAboutMeError', '@getProjectsError']);
@@ -101,8 +95,7 @@ describe('Dashboard Page', () => {
         win.localStorage.setItem('token', JSON.stringify(tokenObject));
       });
       
-      cy.mockDashboardApi();
-      cy.visit('/dashboard');
+      cy.visitWithMocks('/dashboard');
       cy.wait(['@getAboutMe', '@getProjects']);
     });
 

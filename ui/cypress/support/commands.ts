@@ -100,6 +100,20 @@ Cypress.Commands.add('mockDashboardApi', (options?: {
   }
 });
 
+/**
+ * Visitar página con mocks configurados automáticamente
+ * 
+ * Configura los mocks de API y visita la página especificada.
+ * Útil para simplificar tests que requieren datos mockeados.
+ */
+Cypress.Commands.add('visitWithMocks', (path: string, options?: {
+  delay?: number;
+  error?: boolean;
+}) => {
+  cy.mockDashboardApi(options);
+  cy.visit(path);
+});
+
 // Declaraciones TypeScript para autocompletado
 declare global {
   namespace Cypress {
@@ -109,6 +123,7 @@ declare global {
       getByTestId(testId: string): Chainable<JQuery<HTMLElement>>;
       mockLoginApi(options?: { success?: boolean; token?: string; delay?: number }): Chainable<void>;
       mockDashboardApi(options?: { aboutMe?: object; projects?: object[]; delay?: number; error?: boolean }): Chainable<void>;
+      visitWithMocks(path: string, options?: { delay?: number; error?: boolean }): Chainable<void>;
     }
   }
 }
